@@ -1,0 +1,87 @@
+Name: Advika Deodhar
+Lab Section: 6-9pm
+
+-------------------------------------------------------------------------------------------------------------------------------------
+My notes for the program:
+
+What the program is doing overall:
+- writing a server that can connect to many different clients
+  - the clients will send the server a message
+  - the server will go to the handle table
+    - the handle table maps the handle name to the socket number
+  - every client has a name and that is called it's "handle"
+  - the handle is taken in through the command line
+  - handle table must be able to grow in size 
+    - (maybe have it be a linked list, and keep adding nodes as you get new things?)
+    - (each node has 2 fields, socket number and handle name)
+    - (do a flat array and realloc)
+
+GOAL:
+- client sends the server the handle
+- server looks at the handle and checks the handle table
+- if that exists in the handle table already (someone already took that name) return a "not available" message
+- if that handle is unique, send back a "handle accepted" message or something like that
+- assume that the user input will be perfect, do not spend too much time doing error checking for stdin input
+
+
+CLIENT:
+- client is going to call connect, then the server will accept
+- this will establish the TCP connection (TCP = CONNECTION ORIENTED)
+- also POLL()
+  - look at the socket to the server and be able to process messages from STDIN and the server
+- client will take in the server's IP address, port number, and handle name as an input (handle is max 100 char)
+- %M = command that will send a message
+- %C = command that will multicast a message
+- %B = command that will broadcase a message
+- %L = get a list of all the handles from the server
+- client uses the $ as a prompt instead of "enter data"
+- 
+
+SERVER:
+- has to accept connecting clients
+- has to process incomming messages 
+- POLL() that to process one or the other
+- should be able to send messages between 3 clients
+
+
+HANLDE TALBE:
+- make struct to hold the socket descriptor and the handle
+- do this in the server
+- when the server calls accept, the accept() returns a socket fd
+- save that socket fd into the struct
+- when receiving the message, save the message into the struct
+- be able to look up a handle
+  - should be able to look up by a handle name and get a socket number
+  - should be able to look up by a socket number and get a handle name 
+- add a handle
+- remove a handle 
+- DEBUG THIS FIRST AND GET IT WORKING 100%
+- found my old 357 dictionary implementation and modified it to work for this project. 
+
+%M:
+- should work for lowercase m as well
+- takes in the handle name and the message to be sent
+- Ex: "%M handle1 Hello how are you"
+- sends the message to the user with that handle name
+- if there is no text provided, then send an empty message
+- on the receiving end, that is processed like a \n
+- max length of the message is 200 bytes including the \n
+- messages end when user hits return
+- if the message is too long:
+    - break the message up of 199 byte packets (so that = 200 bytes after \n)
+    - ". You will send a new message packet (new normal header and the rest of the
+      header information) for each packet" - not sure what that means yet
+    - receiving end will process these messages individually
+    - to output the message, put each new message on an new line with new line at the end
+    - Ex: "handler1: Hello how are you"
+    - afrer printing out output, make sure the $ goes back out
+    - if the handle does not exist, then say perror "Client with handle <handle name> doesn't exist"
+    - 
+
+Next Steps:
+every time the server calls accept() it returns a file descriptor that becomes the value
+the handle that I send into my client becomes my key
+in the server's main, first create the table, then after it calls accept, it will call dctinsert() and add that to the table
+(check that the table has a value (print out the size))
+is that right? then the next step after that would be to start the %M prompt, and parse through the client stdin input 
+so that I know what the "handle" is that the client is goign to send in. does that sound like the right next path?
