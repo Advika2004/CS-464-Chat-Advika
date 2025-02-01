@@ -27,11 +27,11 @@ int main(int argc, char * argv[])
 }
 
 // gets the buffer from readfromstdin, parses it properly, stores stuff into array of pointers
-char** parseLine(uint8_t buffer){
+char** parseLine(uint8_t *buffer){
 
 	static char* chunks[MAX_CHUNKS];
 	int i = 0;
-    char *firstChunk = strtok(buffer, " ");
+    char *firstChunk = strtok((char*)buffer, " ");
 	chunks[i] = firstChunk;
 	i++;
 
@@ -86,7 +86,7 @@ void sendToServer(int socketNum)
 	uint8_t sendBuf[MAXBUF];   
 	int sendLen = 0;        //amount of data to send
 	int sent = 0;            //actual amount of data sent/* get the data and send it   */
-	lengthRead = 0;
+	int lengthRead = 0;
 	
 	// how much was read from the user input, now need to parse this
 	lengthRead = readFromStdin(sendBuf);
