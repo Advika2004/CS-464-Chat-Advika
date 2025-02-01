@@ -11,6 +11,7 @@
 #include "communicate.h"
 #include "pollLib.h"
 #include "cclient.h"
+#include "makePDU.h"
 
 int main(int argc, char * argv[])
 {
@@ -18,10 +19,19 @@ int main(int argc, char * argv[])
 	
 	checkArgs(argc, argv);
 
+	// only null terminates if shorter than so still need to do it after
+	strncpy(clientHandle, argv[1], HANDLE_MAX - 1);
+	clientHandle[HANDLE_MAX - 1] = '\0'; 
+
 	/* set up the TCP Client socket  */
-	socketNum = tcpClientSetup(argv[1], argv[2], DEBUG_FLAG);
+	socketNum = tcpClientSetup(argv[2], argv[3], DEBUG_FLAG);
+
+	//send the client's handle name
+	//need to make this buffer
+	//sendPDU(clientHandleBuffer);
+
 	clientControl(socketNum);
-	
+
 	close(socketNum);
 	return 0;
 }
@@ -80,6 +90,16 @@ char** parseLine(uint8_t *buffer){
 	return chunks;
 }
 
+// keep for error checking at the end
+// void printChunks(char **chunks) {
+//     int i = 0;
+//     printf("Parsed Tokens:\n");
+//     while (chunks[i] != NULL) {
+//         printf("Token %d: %s\n", i, chunks[i]);
+//         i++;
+//     }
+//     printf("End of tokens.\n");
+// }
 
 void sendToServer(int socketNum)
 {
@@ -90,6 +110,10 @@ void sendToServer(int socketNum)
 	
 	// how much was read from the user input, now need to parse this
 	lengthRead = readFromStdin(sendBuf);
+
+	//testing the parsing
+	char** chunkArray = parseLine(sendBuf);
+	//printChunks(chunkArray);
 
 	printf("read: %s string len: %d (including null)\n", sendBuf, sendLen);
 	
@@ -109,7 +133,7 @@ void sendToServer(int socketNum)
 int readFromStdin(uint8_t * buffer)
 {
 	char aChar = 0;
-	int inputLen = 0;        
+	int inputLen = 0;         	
 	
 	// Important you don't input more characters than you have space 
 	buffer[0] = '\0';
@@ -148,15 +172,15 @@ int readFromStdin(uint8_t * buffer)
 void checkArgs(int argc, char * argv[])
 {
 	/* check command line arguments  */
-	if (argc != 3)
+	if (argc != 4)
 	{
-		printf("usage: %s host-name port-number \n", argv[0]);
+		printf("usage: ./cclient (handle) (server_ip) (server_port)\n");
 		exit(1);
 	}
 }
 
 void clientControl(int serverSocket){
-
+	 
 	// first want to add the server socket and the stdin to the poll set
 	setupPollSet();
 	addToPollSet(serverSocket);

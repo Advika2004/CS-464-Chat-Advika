@@ -14,13 +14,16 @@
 #include <netdb.h>
 #include <stdint.h>
 
-// functoons
+// functions
 void sendToServer(int socketNum);
 int readFromStdin(uint8_t * buffer);
 void checkArgs(int argc, char * argv[]);
 void clientControl(int serverSocket);
 void processMsgFromServer(int serverSocket);
 void processStdin(int serverSocket);
+void printChunks(char** array);
+char** parseLine(uint8_t *buffer);
+
 
 // structs
 typedef struct PercentMMessage {
@@ -28,8 +31,12 @@ typedef struct PercentMMessage {
     uint8_t message[200];
 }PercentMMessage;
 
-// globals
+// macros
 #define MAX_MESSAGE_LENGTH 1400
 #define MAXBUF 1024
 #define DEBUG_FLAG 1
 #define MAX_CHUNKS 12
+#define HANDLE_MAX 100
+
+// global 
+char clientHandle[HANDLE_MAX];
