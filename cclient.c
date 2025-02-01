@@ -6,35 +6,11 @@
 *
 *****************************************************************************/
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/uio.h>
-#include <sys/time.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <string.h>
-#include <strings.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netdb.h>
-#include <stdint.h>
-
 #include "networks.h"
 #include "safeUtil.h"
 #include "communicate.h"
 #include "pollLib.h"
-
-#define MAXBUF 1024
-#define DEBUG_FLAG 1
-
-void sendToServer(int socketNum);
-int readFromStdin(uint8_t * buffer);
-void checkArgs(int argc, char * argv[]);
-void clientControl(int serverSocket);
-void processMsgFromServer(int serverSocket);
-void processStdin(int serverSocket);
+#include "cclient.h"
 
 int main(int argc, char * argv[])
 {
@@ -50,13 +26,71 @@ int main(int argc, char * argv[])
 	return 0;
 }
 
+// gets the buffer from readfromstdin, parses it properly, stores stuff into array of pointers
+char** parseLine(uint8_t buffer){
+
+	static char* chunks[MAX_CHUNKS];
+	int i = 0;
+    char *firstChunk = strtok(buffer, " ");
+	chunks[i] = firstChunk;
+	i++;
+
+	if (strcmp(firstChunk, "%M") == 0) { 
+       char *handle = strtok(NULL, " "); 
+	   chunks[i] = handle;  
+	   i++;
+       char *message = strtok(NULL, "\n"); 
+	   chunks[i] = message;
+	   i++;
+    }
+
+	if (strcmp(firstChunk, "%C") == 0) { 
+       char *number = strtok(NULL, " ");
+
+	   int numHandles = atoi(number);
+
+	   if (numHandles < 2 || numHandles > 9){
+		printf("Too many or too little clients specified, please re-enter between 2-9 other clients\n");
+		return NULL;
+	   }
+
+	   int j = 0;
+	   for (j = 0; j < numHandles; j++){
+		char* curHandle = strtok(NULL, " ");
+		chunks[i] = curHandle;
+		i++;
+	   }
+
+       char *message = strtok(NULL, "\n"); 
+	   chunks[i] = message;
+	   i++;
+    }
+
+	if (strcmp(firstChunk, "%B") == 0) { 
+       char *message = strtok(NULL, "\n"); 
+	   chunks[i] = message;  
+	   i++;
+    }
+
+	if (strcmp(firstChunk, "%L") == 0) { 
+	   //fill this in later idk what this does yet 
+    }
+
+	chunks[i] = NULL;
+	return chunks;
+}
+
+
 void sendToServer(int socketNum)
 {
-	uint8_t sendBuf[MAXBUF];   //data buffer
+	uint8_t sendBuf[MAXBUF];   
 	int sendLen = 0;        //amount of data to send
 	int sent = 0;            //actual amount of data sent/* get the data and send it   */
+	lengthRead = 0;
 	
-	sendLen = readFromStdin(sendBuf);
+	// how much was read from the user input, now need to parse this
+	lengthRead = readFromStdin(sendBuf);
+
 	printf("read: %s string len: %d (including null)\n", sendBuf, sendLen);
 	
 	sent = sendPDU(socketNum, sendBuf, sendLen);
@@ -70,6 +104,8 @@ void sendToServer(int socketNum)
 	printf("Amount of data sent is: %d\n", sent);
 }
 
+//reads the command line into a buffer with a maximum 1400 characters and handles the error for that
+//if it returns 0 that means invalid answer
 int readFromStdin(uint8_t * buffer)
 {
 	char aChar = 0;
@@ -77,7 +113,6 @@ int readFromStdin(uint8_t * buffer)
 	
 	// Important you don't input more characters than you have space 
 	buffer[0] = '\0';
-	//printf("Enter data: ");
 	fflush(stdout);
 	while (inputLen < (MAXBUF - 1) && aChar != '\n')
 	{
@@ -87,12 +122,26 @@ int readFromStdin(uint8_t * buffer)
 			buffer[inputLen] = aChar;
 			inputLen++;
 		}
-	}
+	} 
 	
 	// Null terminate the string
-	buffer[inputLen] = '\0';
+	buffer[inputLen] = '\0'; 
 	inputLen++;
 	
+	// error checks for if the message given is larger than max amount
+	//if that goes over, print error message, ignore all input until \n, ignore command, don't send anything
+	if (inputLen - 1 > MAX_MESSAGE_LENGTH){
+		printf("Error: Input length exceeds maximum input message length %d\n", MAX_MESSAGE_LENGTH);
+
+		// go back through the entire thing and clear it
+		if (aChar != '\n') {
+        while ((aChar = getchar()) != '\n' && aChar != EOF) {
+            // Discard extra characters
+        	}
+   		}
+		return 0;
+	}
+
 	return inputLen;
 }
 
@@ -118,7 +167,7 @@ void clientControl(int serverSocket){
 	while(1){
 
 		if (printPromptFlag == 1) {
-			printf("Enter data: ");
+			printf("$: ");
 			fflush(stdout);
 			printPromptFlag = 0;
 		}

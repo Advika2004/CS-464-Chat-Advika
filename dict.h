@@ -25,8 +25,12 @@ void dctDestroy(Dict *dct);
 void dctInsert(Dict *dct, char *key, int value);
 int dctGetValue(Dict *dct, char *key);
 char *dctGetKey(Dict *dct, int value);
-void dctRemove(Dict *dct, char *key);
+void dctRemoveKey(Dict *dct, char *key);
+void dctRemoveValue(Dict *dct, int value);
 void dctrehash(Dict *dct);
+
+//globals
+struct Dict *table;
 
 #define START_SIZE 2
 #define REHASH_SIZE 2

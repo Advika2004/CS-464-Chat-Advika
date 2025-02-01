@@ -147,7 +147,7 @@ char *dctGetKey(Dict *dct, int value)
 }
 
 // Remove a key-value pair from the dictionary
-void dctRemove(Dict *dct, char *key)
+void dctRemoveKey(Dict *dct, char *key)
 {
     if (dct == NULL || key == NULL)
     {
@@ -179,6 +179,41 @@ void dctRemove(Dict *dct, char *key)
         }
         prev = current;
         current = current->next;
+    }
+}
+
+void dctRemoveValue(Dict *dct, int value){
+
+    if (dct == NULL)
+    {
+        return;
+    }
+
+    for (int index = 0; index < dct->cap; index++)
+    {
+        Node *current = dct->arr[index];
+        Node *prev = NULL;
+
+        while (current != NULL)
+        {
+            if (current->value == value)
+            {
+                if (prev == NULL)
+                {
+                    dct->arr[index] = current->next;
+                }
+                else
+                {
+                    prev->next = current->next;
+                }
+
+                free(current);
+                dct->size--;
+                return;
+            }
+            prev = current;
+            current = current->next;
+        }
     }
 }
 

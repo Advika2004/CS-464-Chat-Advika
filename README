@@ -35,7 +35,16 @@ CLIENT:
 - %B = command that will broadcase a message
 - %L = get a list of all the handles from the server
 - client uses the $ as a prompt instead of "enter data"
-- 
+
+client plan:
+- take in stdin
+- use strtok to split up message by white space
+- if first thing is %M, call create MPDU
+- then pass that into sendPDU? 
+(do the same for the rest of the %? how should I split it up? based on the strtok?)
+- we know how long the handle can be and how long the message can be so make a struct of that
+- if we see a client that gives the %M, we know to store the following data into a struct. 
+- then using the data within that struct, we can create the PDU. 
 
 SERVER:
 - has to accept connecting clients
@@ -61,6 +70,8 @@ HANLDE TALBE:
 %M:
 - should work for lowercase m as well
 - takes in the handle name and the message to be sent
+- client has to parse through stdin 
+- make a struct to store the different stuff? or is it easier to just strtok? 
 - Ex: "%M handle1 Hello how are you"
 - sends the message to the user with that handle name
 - if there is no text provided, then send an empty message
@@ -85,3 +96,30 @@ in the server's main, first create the table, then after it calls accept, it wil
 (check that the table has a value (print out the size))
 is that right? then the next step after that would be to start the %M prompt, and parse through the client stdin input 
 so that I know what the "handle" is that the client is goign to send in. does that sound like the right next path?
+
+How to Continue:
+- make a character array to store everything that I am reading from stdin
+- since the max message can only be 1400 characters, make it that size
+- have a struct of pointers for each B, M, C, L
+- if that goes over, print error message, ignore all input until \n, ignore command, don't send anything
+- store the number of tokens
+  - if there is 2 = M
+  - 1 = B
+  - C??? (figure out later)
+  - 0 = L or E
+- 
+
+Parsing:
+- call strtok once to get the %
+- if its %M, then call strtok again with white space to get handle
+    - call strtok again with \n to get until end of message
+    - put chunks in array
+- if %C, call strtok with white space to get number of handles
+    - for loop of that many handles
+    - if more or less than number of handles specified then print out some error and exit
+    - keep calling strtok with white space
+    - then call strtok with \n to get the end of the message
+- if %B, call strtok with \n
+- if %L, dont call strtok
+- return the array
+

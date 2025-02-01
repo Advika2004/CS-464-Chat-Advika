@@ -45,8 +45,8 @@ int main(int argc, char *argv[])
 	portNumber = checkArgs(argc, argv);
 
 	// create the table
-	struct Dict *table = dctCreate();
-	printf("DEBUG: %d\n", table->size);
+	table = dctCreate();
+	printf("DEBUG - TABLE SIZE WHEN CREATED: %d\n", table->size);
 	
 	//create the server socket
 	mainServerSocket = tcpServerSetup(portNumber);
@@ -60,8 +60,6 @@ int main(int argc, char *argv[])
 
 		// after recv from client, need to grab that out of the message
 
-		// add to the table
-		dctInsert(table, handle, clientSocket);
 	
 		/* close the sockets */
 		close(clientSocket);
@@ -89,6 +87,9 @@ void recvFromClient(int clientSocket)
 	{
 		printf("Message received on socket %d, length: %d Data: %s\n", clientSocket, messageLen, dataBuffer);
 		
+		//INSERT FOFR THE TABLE INSERT FOR THETABLE INSERTT ITN OTHETABLE
+		//dctInsert(table, dataBuffer, clientSocket);
+
 		//! part b of part 8 - uncomment to test that processMsgFromServer works
 
 		// //send the same PDU back to the client

@@ -10,7 +10,7 @@ OBJS = networks.o gethostbyname.o pollLib.o safeUtil.o communicate.o dict.o
 all:   cclient server 
 
 cclient: cclient.c $(OBJS)
-	$(CC) $(CFLAGS) -o cclient cclient.c  $(OBJS) $(LIBS)
+	$(CC) $(CFLAGS) -o cclient cclient.c cclient.h $(OBJS) $(LIBS)
 
 server: server.c $(OBJS)
 	$(CC) $(CFLAGS) -o server server.c $(OBJS) $(LIBS)
